@@ -1,0 +1,10 @@
+{
+  "name": "Remix Remix Remix All Subject General Knowledge",
+  "description": "Interactive English Grammar Model Question platform featuring Smart Replay for retaking missed questions, Adaptive Difficulty roadmap recommendations, side-by-side Compare Quizzes analytics, simulated Global Leaderboard with Top 10 high-achievers, 13-stage sequential Study Roadmap, 24-hour return browser notifications, Focus Mode, PWA offline caching, voice-controlled answering, score progression chart, and diagnostic flashcards.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
