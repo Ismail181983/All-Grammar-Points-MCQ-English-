@@ -2,7 +2,7 @@
   "name": "mcq-from-all-grammar-points",
   "private": true,
   "version": "1.0.0",
-  "description": "Interactive English Grammar Model Question practice platform with 35 sets (875 MCQs), detailed explanations, audio speech synthesis, customizable timers, and interactive aquarium login.",
+  "description": "Interactive English Grammar Model Question practice platform with 45 comprehensive sets (1,125 MCQs), Smart Replay, Adaptive Difficulty, Side-by-Side Quiz Comparison, Study Roadmap, detailed grammatical explanations, audio speech synthesis, customizable timers, and offline PWA support.",
   "homepage": "./",
   "type": "module",
   "scripts": {
