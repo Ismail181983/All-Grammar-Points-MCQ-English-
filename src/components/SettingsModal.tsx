@@ -18,6 +18,8 @@ import {
   Minus,
   ArrowRight,
   Lightbulb,
+  Scale,
+  Type,
 } from 'lucide-react';
 import { QuizSettings } from '../types';
 import { speechManager } from '../utils/speech';
@@ -95,13 +97,173 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Modal Content Scrollable Area */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 text-sm">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6 text-sm">
           {/* Visual Theme Switcher */}
           <ThemeSwitcher
             currentTheme={settings.theme}
             onSelectTheme={(theme) => onUpdateSettings({ theme })}
             soundEffects={settings.soundEffects}
           />
+
+          {/* Negative Marking Setting (0 / 0.25 / 0.50) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/70 border border-rose-500/30 space-y-3.5">
+            <div className="flex items-start gap-2.5">
+              <Scale className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-white text-sm">
+                  Negative Marking System (নেগেটিভ মার্কিং সেটিং)
+                </h4>
+                <p className="text-xs text-slate-400">
+                  প্রতিটি ভুল উত্তরের জন্য কত নম্বর কাটা হবে তা নির্বাচন করুন (0.25 বা 0.50 অথবা বন্ধ রাখুন)
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {([
+                { value: 0, label: 'Off (0.00)', sub: 'No Penalty' },
+                { value: 0.25, label: '-0.25', sub: '4 wrong = -1' },
+                { value: 0.5, label: '-0.50', sub: '2 wrong = -1' },
+              ] as const).map((opt) => {
+                const isActive = (settings.negativeMarking ?? 0.25) === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    id={`settings-neg-marking-${opt.value}`}
+                    type="button"
+                    onClick={() => {
+                      if (settings.soundEffects) soundManager.playClick();
+                      onUpdateSettings({ negativeMarking: opt.value });
+                    }}
+                    className={`min-h-[54px] p-2.5 sm:p-3 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-center ${
+                      isActive
+                        ? opt.value === 0
+                          ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200 ring-1 ring-emerald-400/50'
+                          : 'bg-rose-500/20 border-rose-400 text-rose-200 ring-1 ring-rose-400/50 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
+                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-600'
+                    }`}
+                  >
+                    <span className="font-mono font-black text-xs sm:text-sm tabular-nums">
+                      {opt.label}
+                    </span>
+                    <span className="text-[10px] text-slate-400 mt-0.5">{opt.sub}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Font Size Controls for Question, Key & Distractors */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/70 border border-cyan-500/30 space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-start gap-2.5">
+                <Type className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-white text-sm">
+                    Quiz Font Controls (প্রশ্ন, Key ও Distractors ফন্ট সাইজ)
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    কুইজের প্রশ্ন এবং অপশন Key (A/B/C/D) ও Distractors-এর লেখা বড় বা ছোট করুন
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onUpdateSettings({ questionFontSize: 18, optionFontSize: 15 })}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-cyan-300 border border-slate-700 shrink-0 cursor-pointer"
+              >
+                Reset Aa
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+              {/* Question Font Size */}
+              <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-200">Question Font:</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onUpdateSettings({
+                          questionFontSize: Math.max(14, (settings.questionFontSize || 18) - 1),
+                        })
+                      }
+                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 font-bold cursor-pointer"
+                    >
+                      A-
+                    </button>
+                    <strong className="font-mono text-cyan-300 tabular-nums w-11 text-center">
+                      {settings.questionFontSize || 18}px
+                    </strong>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onUpdateSettings({
+                          questionFontSize: Math.min(28, (settings.questionFontSize || 18) + 1),
+                        })
+                      }
+                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 font-bold cursor-pointer"
+                    >
+                      A+
+                    </button>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="14"
+                  max="28"
+                  step="1"
+                  value={settings.questionFontSize || 18}
+                  onChange={(e) => onUpdateSettings({ questionFontSize: parseInt(e.target.value) })}
+                  className="w-full accent-cyan-400"
+                />
+              </div>
+
+              {/* Key & Distractors Font Size */}
+              <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-200">Key &amp; Distractors:</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onUpdateSettings({
+                          optionFontSize: Math.max(12, (settings.optionFontSize || 15) - 1),
+                        })
+                      }
+                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-bold cursor-pointer"
+                    >
+                      A-
+                    </button>
+                    <strong className="font-mono text-emerald-300 tabular-nums w-11 text-center">
+                      {settings.optionFontSize || 15}px
+                    </strong>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onUpdateSettings({
+                          optionFontSize: Math.min(24, (settings.optionFontSize || 15) + 1),
+                        })
+                      }
+                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-bold cursor-pointer"
+                    >
+                      A+
+                    </button>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="12"
+                  max="24"
+                  step="1"
+                  value={settings.optionFontSize || 15}
+                  onChange={(e) => onUpdateSettings({ optionFontSize: parseInt(e.target.value) })}
+                  className="w-full accent-emerald-400"
+                />
+              </div>
+            </div>
+          </div>
 
           {/* 1. Speech Read-Aloud Engine */}
           <div className="p-5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-4">
@@ -224,18 +386,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
 
-            {/* Total 25 Questions Timer Toggle & Controls */}
+            {/* Total All-Quiz Timer Toggle & Controls */}
             <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
                   <span className="font-semibold text-xs text-slate-200 block">
-                    ২৫টি কুইজের জন্য মোট সময় (Total 25-MCQ Timer)
+                    সকল কুইজের জন্য মোট সময় (All-Quiz Total Timer)
                   </span>
                   <span className="text-[11px] text-slate-400">
                     নির্দিষ্ট সময়ের মধ্যে সব উত্তর না দিলে কুইজ লক হবে এবং Check Answer সক্রিয় হবে
                   </span>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer shrink-0">
                   <input
                     type="checkbox"
                     checked={settings.enableTotalTimer}
@@ -248,24 +410,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {settings.enableTotalTimer && (
                 <div className="pl-3 border-l-2 border-cyan-500/40 space-y-2 pt-1">
-                  <div className="flex items-center justify-between text-xs text-slate-300">
-                    <span>২৫টি কুইজের মোট সময় (মিনিট):</span>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
+                    <span>সকল কুইজের মোট সময় (মিনিট):</span>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => onUpdateSettings({ totalTimeMinutes: Math.max(2, settings.totalTimeMinutes - 1) })}
-                        className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700"
+                        onClick={() => onUpdateSettings({ totalTimeMinutes: Math.max(1, settings.totalTimeMinutes - 1) })}
+                        className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 cursor-pointer"
                         title="১ মিনিট কমান"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <strong className="text-cyan-300 font-mono text-sm px-2 py-0.5 rounded bg-slate-950 border border-cyan-500/30">
+                      <strong className="text-cyan-300 font-mono text-sm px-2.5 py-0.5 rounded bg-slate-950 border border-cyan-500/30 tabular-nums">
                         {settings.totalTimeMinutes} মিনিট
                       </strong>
                       <button
                         type="button"
-                        onClick={() => onUpdateSettings({ totalTimeMinutes: Math.min(60, settings.totalTimeMinutes + 1) })}
-                        className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700"
+                        onClick={() => onUpdateSettings({ totalTimeMinutes: Math.min(90, settings.totalTimeMinutes + 1) })}
+                        className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 cursor-pointer"
                         title="১ মিনিট বাড়ান"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -274,17 +436,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                   <input
                     type="range"
-                    min="2"
-                    max="60"
+                    min="1"
+                    max="90"
                     step="1"
                     value={settings.totalTimeMinutes}
                     onChange={(e) => onUpdateSettings({ totalTimeMinutes: parseInt(e.target.value) })}
                     className="w-full accent-cyan-400"
                   />
                   <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                    <span>২ মিনিট</span>
+                    <span>১ মিনিট</span>
                     <span>২০ মিনিট (Default)</span>
-                    <span>৬০ মিনিট</span>
+                    <span>৯০ মিনিট</span>
                   </div>
                 </div>
               )}
@@ -292,17 +454,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
             {/* Per-MCQ Individual Timer Toggle & Controls */}
             <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-semibold text-xs text-slate-200 block flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-amber-400" />
-                    প্রতিটি কুইজের জন্য সময় (Per-Question Timer & Auto-Lock)
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="font-semibold text-xs text-slate-200 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>প্রতিটি কুইজের জন্য সময় (Per-Quiz / Per-Question Timer)</span>
                   </span>
                   <span className="text-[11px] text-slate-400">
                     নির্দিষ্ট সময়ে উত্তর না দিলে প্রশ্নটি লক হয়ে যাবে; সময় বাড়াতে বা কমাতে পারেন
                   </span>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer shrink-0">
                   <input
                     type="checkbox"
                     checked={settings.enableQuestionTimer}
@@ -315,24 +477,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {settings.enableQuestionTimer && (
                 <div className="pl-3 border-l-2 border-emerald-500/40 space-y-2 pt-1">
-                  <div className="flex items-center justify-between text-xs text-slate-300">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
                     <span>প্রতি প্রশ্নের সময় (সেকেন্ড):</span>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => onUpdateSettings({ questionTimeSeconds: Math.max(10, settings.questionTimeSeconds - 5) })}
-                        className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700"
+                        className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 cursor-pointer"
                         title="৫ সেকেন্ড কমান"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <strong className="text-emerald-300 font-mono text-sm px-2 py-0.5 rounded bg-slate-950 border border-emerald-500/30">
+                      <strong className="text-emerald-300 font-mono text-sm px-2.5 py-0.5 rounded bg-slate-950 border border-emerald-500/30 tabular-nums">
                         {settings.questionTimeSeconds} সেকেন্ড
                       </strong>
                       <button
                         type="button"
                         onClick={() => onUpdateSettings({ questionTimeSeconds: Math.min(180, settings.questionTimeSeconds + 5) })}
-                        className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700"
+                        className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 cursor-pointer"
                         title="৫ সেকেন্ড বাড়ান"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -358,17 +520,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
 
             {/* Auto Scroll to Next Question Toggle */}
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
-              <div>
-                <span className="font-semibold text-xs text-slate-200 block flex items-center gap-1.5">
-                  <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
-                  উত্তর দিলে স্বয়ংক্রিয় পরবর্তী কুইজে স্ক্রোল (Auto-Scroll)
+            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <span className="font-semibold text-xs text-slate-200 flex items-center gap-1.5">
+                  <ArrowRight className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span>উত্তর দিলে স্বয়ংক্রিয় পরবর্তী কুইজে স্ক্রোল (Auto-Scroll)</span>
                 </span>
                 <span className="text-[11px] text-slate-400">
                   একটি কুইজের অপশন নির্বাচন করলে স্বয়ংক্রিয়ভাবে পরবর্তী কুইজ সামনে আসবে
                 </span>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
                 <input
                   type="checkbox"
                   checked={settings.autoAdvanceOnAnswer ?? true}
@@ -380,17 +542,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
 
             {/* Always Show Explanations in Quiz Toggle */}
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
-              <div>
-                <span className="font-semibold text-xs text-amber-300 block flex items-center gap-1.5">
-                  <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-                  কুইজ চলাকালীন ব্যাকরণ ব্যাখ্যা সক্রিয় রাখা (Always Show Explanations)
+            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <span className="font-semibold text-xs text-amber-300 flex items-center gap-1.5">
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>কুইজ চলাকালীন ব্যাকরণ ব্যাখ্যা সক্রিয় রাখা (Always Show Explanations)</span>
                 </span>
                 <span className="text-[11px] text-slate-400">
                   সক্রিয় থাকলে প্রতিটি প্রশ্নের নিচে বিস্তারিত ব্যাকরণ ব্যাখ্যা ও সঠিক উত্তর সর্বদা প্রদর্শিত থাকবে
                 </span>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
                 <input
                   type="checkbox"
                   checked={settings.showExplanationInQuiz ?? false}

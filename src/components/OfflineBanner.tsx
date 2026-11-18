@@ -7,7 +7,7 @@ interface OfflineBannerProps {
   cachedSetsCount?: number;
 }
 
-export const OfflineBanner: React.FC<OfflineBannerProps> = ({ cachedSetsCount = 35 }) => {
+export const OfflineBanner: React.FC<OfflineBannerProps> = ({ cachedSetsCount = 45 }) => {
   const { isOnline, wasOffline, clearOfflineNotice } = useNetworkStatus();
 
   return (

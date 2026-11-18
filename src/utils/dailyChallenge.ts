@@ -32,7 +32,7 @@ export function getTodayDateKey(): string {
 /**
  * Deterministically picks a set ID from 1 to totalSets for the given date
  */
-export function getDailyChallengeSetId(dateKey: string, totalSets: number = 35): number {
+export function getDailyChallengeSetId(dateKey: string, totalSets: number = 45): number {
   let hash = 0;
   for (let i = 0; i < dateKey.length; i++) {
     hash = (hash << 5) - hash + dateKey.charCodeAt(i);
@@ -63,7 +63,7 @@ export function formatDailyDate(dateKey: string): string {
 /**
  * Retrieves the current Daily Challenge status including streak information
  */
-export function getDailyChallengeStatus(totalSets: number = 35): DailyChallengeState {
+export function getDailyChallengeStatus(totalSets: number = 45): DailyChallengeState {
   const todayKey = getTodayDateKey();
   const targetSetId = getDailyChallengeSetId(todayKey, totalSets);
   const formattedDate = formatDailyDate(todayKey);

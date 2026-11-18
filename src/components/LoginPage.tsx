@@ -14,7 +14,6 @@ import {
   PhoneCall,
   Clock,
   ShieldAlert,
-  KeyRound,
 } from 'lucide-react';
 import { HeaderClock } from './HeaderClock';
 import { Footer } from './Footer';
@@ -53,12 +52,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         volume: settings.speechVolume,
       });
     }
-  };
-
-  const handleAutofill = () => {
-    if (settings.soundEffects) soundManager.playClick();
-    setUsername('Bangladesh1971');
-    setPassword('2024');
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -280,26 +273,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             )}
           </AnimatePresence>
 
-          {/* 4. Credentials Demo Helper Pill */}
-          <div className="mb-4 sm:mb-5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-cyan-950/40 border border-cyan-500/30 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-2 text-cyan-200 font-medium text-[11px] sm:text-xs">
-              <KeyRound className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 shrink-0" />
-              <span>
-                Default ID: <strong className="text-white font-mono">Bangladesh1971</strong> | Pass:{' '}
-                <strong className="text-white font-mono">2024</strong>
-              </span>
-            </div>
-            <button
-              id="autofill-credentials-btn"
-              type="button"
-              onClick={handleAutofill}
-              className="w-full xs:w-auto px-2.5 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 border border-cyan-400/40 font-bold transition text-[11px] text-center shrink-0 cursor-pointer"
-            >
-              Fill Credentials
-            </button>
-          </div>
-
-          {/* 5. Login Form */}
+          {/* 4. Login Form */}
           <form onSubmit={handleLogin} className="space-y-3.5 sm:space-y-4">
             {/* Username Input */}
             <div>
@@ -316,7 +290,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. Bangladesh1971"
+                  placeholder="Enter user name"
+                  autoComplete="username"
                   className="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30 text-base sm:text-sm font-medium transition"
                 />
               </div>
@@ -337,7 +312,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="e.g. 2024"
+                  placeholder="Enter password"
+                  autoComplete="current-password"
                   className="w-full pl-10 sm:pl-11 pr-11 sm:pr-12 py-2.5 sm:py-3 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30 text-base sm:text-sm font-medium transition"
                 />
                 <button

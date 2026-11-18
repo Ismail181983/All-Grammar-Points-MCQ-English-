@@ -560,53 +560,59 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
   return (
     <div className="relative min-h-screen flex flex-col justify-between text-slate-100 z-10">
       {/* Top Navigation Bar */}
-      <header className={`relative z-30 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-4 backdrop-blur-xl border-b flex flex-wrap items-center justify-between gap-2.5 sm:gap-4 transition-colors duration-500 ${activeTheme.headerBgClass}`}>
-        {/* Left Branding */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-cyan-400 to-teal-500 p-0.5 shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center shrink-0">
-            <div className="w-full h-full rounded-[10px] sm:rounded-[14px] bg-slate-950 flex items-center justify-center">
-              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-300" />
-            </div>
-          </div>
-          <div>
-            <h1 className="text-sm xs:text-base sm:text-lg font-black text-white tracking-tight flex items-center gap-1.5">
-              <span>MCQ from all Grammar Points</span>
-            </h1>
-            <p className="text-[10px] xs:text-xs text-cyan-300 font-medium line-clamp-1 xs:line-clamp-none">
-              English Grammar Model Test & Practice Series
-            </p>
-          </div>
-        </div>
-
-        {/* Center Clock & Student Profile Badge */}
-        <div className="hidden md:flex items-center gap-3">
-          <HeaderClock />
-
-          <button
-            id="nav-profile-btn"
-            type="button"
-            onClick={() => {
-              if (settings.soundEffects) soundManager.playClick();
-              onOpenProfile();
-            }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 hover:border-cyan-400/80 text-xs text-slate-300 hover:text-white transition cursor-pointer shadow-inner"
-            title="Edit Student Profile"
-          >
-            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 text-slate-950 flex items-center justify-center font-black text-[11px]">
-              {studentProfile.name.charAt(0).toUpperCase() || 'S'}
-            </div>
-            <div className="text-left">
-              <div className="font-bold leading-tight text-white line-clamp-1 max-w-[120px]">
-                {studentProfile.name}
+      <header className={`relative z-30 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-4 backdrop-blur-xl border-b flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 sm:gap-3.5 transition-colors duration-500 ${activeTheme.headerBgClass}`}>
+        <div className="flex flex-wrap items-center justify-between gap-2.5 w-full xl:w-auto">
+          {/* Left Branding */}
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-cyan-400 to-teal-500 p-0.5 shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center shrink-0">
+              <div className="w-full h-full rounded-[10px] sm:rounded-[14px] bg-slate-950 flex items-center justify-center">
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-300" />
               </div>
-              <div className="text-[10px] text-cyan-300">Roll: {studentProfile.roll}</div>
             </div>
-            <Edit3 className="w-3 h-3 text-slate-400 ml-0.5" />
-          </button>
+            <div className="min-w-0">
+              <h1 className="text-sm xs:text-base sm:text-lg font-black text-white tracking-tight truncate">
+                MCQ from all Grammar Points
+              </h1>
+              <p className="text-[10px] xs:text-xs text-cyan-300 font-medium truncate">
+                English Grammar Model Test & Practice Series
+              </p>
+            </div>
+          </div>
+
+          {/* Clock & Student Profile Badge (Accessible on ALL devices including Mobile) */}
+          <div className="flex items-center gap-2 sm:gap-3 ml-auto xl:ml-0">
+            <div className="hidden lg:block">
+              <HeaderClock />
+            </div>
+
+            <button
+              id="nav-profile-btn"
+              type="button"
+              onClick={() => {
+                if (settings.soundEffects) soundManager.playClick();
+                onOpenProfile();
+              }}
+              className="min-h-[40px] flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 hover:border-cyan-400/80 text-xs text-slate-300 hover:text-white transition cursor-pointer shadow-inner"
+              title="Edit User Name, User ID & Roll"
+            >
+              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 text-slate-950 flex items-center justify-center font-black text-[11px] shrink-0">
+                {studentProfile.name.charAt(0).toUpperCase() || 'S'}
+              </div>
+              <div className="text-left min-w-0">
+                <div className="font-bold leading-tight text-white truncate max-w-[95px] xs:max-w-[130px]">
+                  {studentProfile.name}
+                </div>
+                <div className="text-[10px] font-mono text-amber-300 truncate max-w-[115px] xs:max-w-[150px]">
+                  {studentProfile.userId} <span className="text-cyan-300">• R:{studentProfile.roll}</span>
+                </div>
+              </div>
+              <Edit3 className="w-3 h-3 text-slate-400 shrink-0" />
+            </button>
+          </div>
         </div>
 
         {/* Right Navigation & Control Buttons */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 justify-start xl:justify-end">
           {/* Study Roadmap Navigation Button */}
           <button
             id="nav-roadmap-btn"
@@ -615,7 +621,7 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
               if (settings.soundEffects) soundManager.playClick();
               setDashboardTab((prev) => (prev === 'roadmap' ? 'all-sets' : 'roadmap'));
             }}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition shadow-sm shrink-0 cursor-pointer ${
+            className={`min-h-[38px] flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition shadow-sm shrink-0 cursor-pointer ${
               dashboardTab === 'roadmap'
                 ? 'bg-cyan-500 text-slate-950 font-black shadow-[0_0_15px_rgba(6,182,212,0.5)]'
                 : 'bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 hover:bg-cyan-500/30'
@@ -637,7 +643,7 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
               if (settings.soundEffects) soundManager.playClick();
               setDashboardTab((prev) => (prev === 'leaderboard' ? 'all-sets' : 'leaderboard'));
             }}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition shadow-sm shrink-0 cursor-pointer ${
+            className={`min-h-[38px] flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition shadow-sm shrink-0 cursor-pointer ${
               dashboardTab === 'leaderboard'
                 ? 'bg-amber-400 text-slate-950 font-black shadow-[0_0_15px_rgba(251,191,36,0.5)]'
                 : 'bg-amber-500/20 border border-amber-400/50 text-amber-300 hover:bg-amber-500/30'
@@ -659,7 +665,7 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
               if (settings.soundEffects) soundManager.playClick();
               onOpenFlashcards(1);
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-purple-500/20 border border-purple-400/50 text-purple-300 hover:bg-purple-500/30 text-xs font-bold transition shadow-sm shrink-0 cursor-pointer"
+            className="min-h-[38px] flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-purple-500/20 border border-purple-400/50 text-purple-300 hover:bg-purple-500/30 text-xs font-bold transition shadow-sm shrink-0 cursor-pointer"
             title="Study Grammar via Flashcards"
           >
             <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-300" />
@@ -671,11 +677,11 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
             id="nav-weak-areas-btn"
             type="button"
             onClick={handleOpenWeakAreasModal}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-purple-500/20 border border-amber-400/50 text-amber-300 hover:bg-amber-500/30 text-xs font-bold transition shadow-sm shrink-0 cursor-pointer"
+            className="min-h-[38px] flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-purple-500/20 border border-amber-400/50 text-amber-300 hover:bg-amber-500/30 text-xs font-bold transition shadow-sm shrink-0 cursor-pointer"
             title="Identify top 3 grammar categories scoring below 60% and generate focused practice"
           >
             <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-            <span className="hidden xs:inline">Review Weak Areas</span>
+            <span className="hidden sm:inline">Weak Areas</span>
             {weakAreasReport.hasBelow60 && (
               <span className="px-1.5 py-0.2 bg-rose-500/40 border border-rose-400/50 rounded-full text-[10px] font-black text-rose-200 animate-pulse">
                 {weakAreasReport.identifiedWeakCategories.length}
@@ -687,11 +693,11 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
             id="nav-trophies-btn"
             type="button"
             onClick={handleTrophiesClick}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-400/50 text-amber-300 hover:bg-amber-500/30 text-xs font-bold transition shadow-sm shrink-0 cursor-pointer"
+            className="min-h-[38px] flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-400/50 text-amber-300 hover:bg-amber-500/30 text-xs font-bold transition shadow-sm shrink-0 cursor-pointer"
             title="Digital Trophies & Badges Cabinet"
           >
             <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />
-            <span className="hidden xs:inline">Trophies</span>
+            <span className="hidden sm:inline">Trophies</span>
             <span className="px-1.5 py-0.2 bg-amber-400/30 rounded-full text-[10px] font-black text-white">
               {unlockedBadgesCount}
             </span>
@@ -701,7 +707,8 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
             id="nav-scoreboard-btn"
             type="button"
             onClick={handleScoreBoardClick}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-cyan-400 text-xs font-bold transition shadow-sm shrink-0 cursor-pointer"
+            className="min-h-[38px] flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-cyan-400 text-xs font-bold transition shadow-sm shrink-0 cursor-pointer"
+            title="Permanent Quiz Score Board"
           >
             <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
             <span className="hidden xs:inline">Score Board</span>
@@ -711,7 +718,7 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
             id="nav-settings-btn"
             type="button"
             onClick={handleSettingsClick}
-            className="p-1.5 sm:p-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-cyan-400 transition shrink-0 cursor-pointer"
+            className="min-h-[38px] min-w-[38px] p-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-cyan-400 transition shrink-0 flex items-center justify-center cursor-pointer"
             title="Smart & Modern Settings"
           >
             <Settings className="w-4 h-4" />
@@ -721,7 +728,7 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
             id="nav-logout-btn"
             type="button"
             onClick={handleLogoutClick}
-            className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition shrink-0 cursor-pointer"
+            className="min-h-[38px] flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition shrink-0 cursor-pointer"
             title="Logout"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -757,6 +764,9 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
             <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight">
               Welcome, <span className="text-cyan-300">{studentProfile.name}</span>!
             </h2>
+            <p className="text-[11px] font-mono text-amber-300">
+              User ID: <strong>{studentProfile.userId}</strong> • Roll: <strong>{studentProfile.roll}</strong>
+            </p>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
               Explore your personalized <strong>Study Roadmap</strong> from beginner to advanced grammar, test your skills in the <strong>Daily Challenge</strong>, or select any Model Question set with in-depth explanations.
             </p>
@@ -765,14 +775,14 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
           {/* Quick Performance Metrics */}
           <div className="flex items-center justify-around sm:justify-center gap-3 sm:gap-4 bg-slate-900/90 border border-slate-700/80 rounded-xl sm:rounded-2xl p-3 sm:p-4 shrink-0 shadow-inner">
             <div className="text-center px-2">
-              <div className="text-xl sm:text-2xl font-black text-cyan-300 font-mono">{totalAttempts}</div>
+              <div className="text-xl sm:text-2xl font-black text-cyan-300 font-mono tabular-nums">{totalAttempts}</div>
               <div className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                 Tests Taken
               </div>
             </div>
             <div className="h-8 w-px bg-slate-700" />
             <div className="text-center px-2">
-              <div className="text-xl sm:text-2xl font-black text-amber-300 font-mono">
+              <div className="text-xl sm:text-2xl font-black text-amber-300 font-mono tabular-nums">
                 {avgScore}%
               </div>
               <div className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
@@ -793,8 +803,8 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
         </div>
 
         {/* Primary Tab Switcher: All Model Question Tests vs Study Roadmap */}
-        <div className="mb-6 sm:mb-8 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 shadow-inner">
-          <div className="flex items-center gap-2">
+        <div className="mb-6 sm:mb-8 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2 shadow-inner">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               id="tab-all-sets-btn"
@@ -802,16 +812,16 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
                 if (settings.soundEffects) soundManager.playClick();
                 setDashboardTab('all-sets');
               }}
-              className={`flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-5 py-2.5 rounded-xl font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer ${
+              className={`flex-1 sm:flex-initial min-h-[44px] px-3 sm:px-5 py-2.5 rounded-xl font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer ${
                 dashboardTab === 'all-sets'
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 shadow-md shadow-cyan-500/30'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              <BookOpen className="w-4 h-4" />
-              <span>All Model Question Tests</span>
+              <BookOpen className="w-4 h-4 shrink-0" />
+              <span>Model Sets</span>
               <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-slate-950/40">
-                {questionSets.length} Sets
+                {questionSets.length}
               </span>
             </button>
 
@@ -1313,17 +1323,33 @@ export const ModelQuestionDashboard = React.memo<ModelQuestionDashboardProps>(({
             </p>
           </div>
 
-          {/* Timer status badge */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-slate-300 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-xl">
+          {/* Quiz Config Status & Quick Settings Pill */}
+          <button
+            type="button"
+            onClick={handleSettingsClick}
+            className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-slate-300 bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-cyan-500/50 px-3 py-2 rounded-xl transition cursor-pointer"
+            title="Click to configure Quiz Timers, Negative Marking & Font Sizes"
+          >
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 shrink-0" />
             <span>
-              Total: <strong>{settings.enableTotalTimer ? `${settings.totalTimeMinutes}m` : 'Off'}</strong>
+              Total: <strong className="font-mono">{settings.enableTotalTimer ? `${settings.totalTimeMinutes}m` : 'Off'}</strong>
             </span>
             <span className="text-slate-600">|</span>
             <span>
-              Per-MCQ: <strong>{settings.enableQuestionTimer ? `${settings.questionTimeSeconds}s` : 'Off'}</strong>
+              Per-MCQ: <strong className="font-mono">{settings.enableQuestionTimer ? `${settings.questionTimeSeconds}s` : 'Off'}</strong>
             </span>
-          </div>
+            <span className="text-slate-600">|</span>
+            <span>
+              Neg:{' '}
+              <strong className={`font-mono ${(settings.negativeMarking ?? 0) > 0 ? 'text-rose-300' : 'text-emerald-300'}`}>
+                {(settings.negativeMarking ?? 0) === 0 ? 'Off' : `-${settings.negativeMarking.toFixed(2)}`}
+              </strong>
+            </span>
+            <span className="text-slate-600 hidden sm:inline">|</span>
+            <span className="hidden sm:inline text-amber-300 font-mono">
+              Aa {settings.questionFontSize || 18}/{settings.optionFontSize || 15}px
+            </span>
+          </button>
         </div>
 
         {/* Empty State when no sets match filters */}

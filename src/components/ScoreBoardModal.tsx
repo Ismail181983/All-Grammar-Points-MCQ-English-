@@ -23,6 +23,7 @@ import {
   Minus,
   Check,
   Zap,
+  Flag,
 } from 'lucide-react';
 import { ScoreRecord, BadgeProgress, CategoryScoreDetail } from '../types';
 import { getTierStyle } from '../utils/badges';
@@ -57,42 +58,6 @@ export const ScoreBoardModal: React.FC<ScoreBoardModalProps> = ({
   // Compare Quizzes States (Attempt A vs Attempt B)
   const [compareId1, setCompareId1] = useState<string>(() => scores[1]?.id || scores[0]?.id || '');
   const [compareId2, setCompareId2] = useState<string>(() => scores[0]?.id || '');
-
-  if (!isOpen) return null;
-
-  const unlockedCount = badges.filter((b) => b.isUnlocked).length;
-
-  // Filter scores
-  const filteredScores = scores.filter((rec) => {
-    const matchesModel = selectedModel === 'all' || rec.modelNumber === selectedModel;
-    const matchesSearch =
-      rec.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rec.roll.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesModel && matchesSearch;
-  });
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleExportCSV = () => {
-    if (scores.length === 0) return;
-    const headers = 'ID,Name,Roll,Model Question,Score,Total,Percentage,Duration (Seconds),Date\n';
-    const rows = scores
-      .map(
-        (s) =>
-          `"${s.id}","${s.userName}","${s.roll}","${s.modelTitle}",${s.score},${s.totalQuestions},${s.percentage}%,${s.timeSpentSeconds},"${s.date}"`
-      )
-      .join('\n');
-    const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Permanent_Score_Board_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   // Selected attempt objects for side-by-side comparison
   const attempt1 = useMemo(() => {
@@ -130,6 +95,53 @@ export const ScoreBoardModal: React.FC<ScoreBoardModalProps> = ({
     }).sort((a, b) => b.diff - a.diff);
   }, [attempt1, attempt2]);
 
+  if (!isOpen) return null;
+
+  const unlockedCount = badges.filter((b) => b.isUnlocked).length;
+
+  // Filter scores by Model Set, User Name, User ID, or Roll
+  const filteredScores = scores.filter((rec) => {
+    const matchesModel = selectedModel === 'all' || rec.modelNumber === selectedModel;
+    const term = searchTerm.toLowerCase().trim();
+    const uid = (rec.userId || `UID-${rec.roll}`).toLowerCase();
+    const matchesSearch =
+      !term ||
+      rec.userName.toLowerCase().includes(term) ||
+      uid.includes(term) ||
+      rec.roll.toLowerCase().includes(term);
+    return matchesModel && matchesSearch;
+  });
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleExportCSV = () => {
+    if (scores.length === 0) return;
+    const headers =
+      'ID,User ID,User Name,Roll,Model Question,Correct,Wrong,Negative Marking,Penalty,Net Score,Total,Percentage,Flagged Count,Duration (Seconds),Date\n';
+    const rows = scores
+      .map((s) => {
+        const uid = s.userId || `UID-${s.roll}`;
+        const correct = s.correctCount ?? s.rawScore ?? s.score;
+        const wrong = s.wrongCount ?? 0;
+        const neg = s.negativeMarking ?? 0;
+        const penalty = s.penalty ?? 0;
+        const net = s.netScore ?? s.score;
+        const flagged = s.flaggedQuestions?.length ?? 0;
+        return `"${s.id}","${uid}","${s.userName}","${s.roll}","${s.modelTitle}",${correct},${wrong},${neg},${penalty},${net},${s.totalQuestions},${s.percentage}%,${flagged},${s.timeSpentSeconds},"${s.date}"`;
+      })
+      .join('\n');
+    const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Permanent_Score_Board_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleSelectForCompare = (recordId: string) => {
     if (!compareId1 || compareId1 === recordId) {
       setCompareId1(recordId);
@@ -140,25 +152,25 @@ export const ScoreBoardModal: React.FC<ScoreBoardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 xs:p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl sm:rounded-3xl bg-[#0F172A] border border-blue-500/40 shadow-[0_0_50px_rgba(30,58,138,0.4)] text-white overflow-hidden"
+        className="w-full max-w-5xl max-h-[94vh] flex flex-col rounded-2xl sm:rounded-3xl bg-[#0F172A] border border-blue-500/40 shadow-[0_0_50px_rgba(30,58,138,0.4)] text-white overflow-hidden"
       >
         {/* Header */}
         <div className="p-3.5 sm:p-5 lg:p-6 border-b border-blue-500/25 flex items-center justify-between gap-2.5 sm:gap-4 bg-[#0B132B]/90">
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
               <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <h3 className="text-sm sm:text-xl font-black text-white tracking-tight">
-                Permanent Score Board
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-xl font-black text-white tracking-tight truncate">
+                Permanent Quiz Score Board
               </h3>
-              <p className="text-[10px] sm:text-xs text-cyan-300 truncate max-w-[190px] xs:max-w-[280px] sm:max-w-none">
-                Persistent track record of student practice attempts and scores
+              <p className="text-[10px] sm:text-xs text-cyan-300 truncate max-w-[200px] xs:max-w-[300px] sm:max-w-none">
+                User Name, User ID, Net Score & Negative Marking Track Record
               </p>
             </div>
           </div>
@@ -169,26 +181,26 @@ export const ScoreBoardModal: React.FC<ScoreBoardModalProps> = ({
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
+                  className="min-w-[36px] min-h-[36px] p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-700 transition flex items-center justify-center cursor-pointer"
                   title="Print Score Sheet"
                 >
-                  <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Printer className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
                   onClick={handleExportCSV}
                   disabled={scores.length === 0}
-                  className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-700 transition disabled:opacity-40 cursor-pointer"
+                  className="min-w-[36px] min-h-[36px] p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-700 transition disabled:opacity-40 flex items-center justify-center cursor-pointer"
                   title="Export to CSV"
                 >
-                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Download className="w-4 h-4" />
                 </button>
               </>
             )}
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 sm:p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
+              className="min-w-[36px] min-h-[36px] p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-700 transition flex items-center justify-center cursor-pointer"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -196,7 +208,7 @@ export const ScoreBoardModal: React.FC<ScoreBoardModalProps> = ({
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center px-4 sm:px-6 bg-slate-950 border-b border-slate-800 gap-2 overflow-x-auto scrollbar-none">
+        <div className="flex items-center px-3 sm:px-6 bg-slate-950 border-b border-slate-800 gap-2 overflow-x-auto scrollbar-none">
           <button
             type="button"
             onClick={() => setActiveTab('scores')}
@@ -248,14 +260,14 @@ export const ScoreBoardModal: React.FC<ScoreBoardModalProps> = ({
             {/* Filter Controls Bar */}
             <div className="p-3 sm:p-4 bg-slate-950/50 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
           {/* Search bar */}
-          <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
+          <div className="relative w-full sm:flex-1 sm:min-w-[220px]">
             <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by Student Name or Roll..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+              placeholder="Search by User Name, User ID or Roll..."
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
             />
           </div>
 
@@ -331,96 +343,213 @@ export const ScoreBoardModal: React.FC<ScoreBoardModalProps> = ({
               <Trophy className="w-12 h-12 mx-auto mb-3 opacity-30 text-amber-400" />
               <h4 className="text-base font-bold text-slate-300">No score records found</h4>
               <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                Take any Model Question test and click "Check Answer" to permanently record your scores here.
+                Take any Model Question test and click &quot;Check Answer&quot; to permanently record your scores here.
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-bold">
-                    <th className="py-2.5 px-3">Date & Time</th>
-                    <th className="py-2.5 px-3">Student Name</th>
-                    <th className="py-2.5 px-3">Roll</th>
-                    <th className="py-2.5 px-3">Model Question</th>
-                    <th className="py-2.5 px-3">Score</th>
-                    <th className="py-2.5 px-3">Accuracy</th>
-                    <th className="py-2.5 px-3">Time</th>
-                    <th className="py-2.5 px-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/80">
-                  {filteredScores.map((rec) => {
-                    const isHigh = rec.percentage >= 80;
-                    return (
-                      <tr
-                        key={rec.id}
-                        className="hover:bg-slate-850/60 transition font-medium text-slate-200"
-                      >
-                        <td className="py-3 px-3 text-slate-400 font-mono text-[11px] whitespace-nowrap">
-                          {rec.date}
-                        </td>
-                        <td className="py-3 px-3 font-bold text-white whitespace-nowrap">
-                          {rec.userName}
-                        </td>
-                        <td className="py-3 px-3 font-mono text-cyan-300 whitespace-nowrap">
-                          {rec.roll}
-                        </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30 text-cyan-200 font-semibold text-[11px]">
-                            {rec.modelTitle}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 font-mono font-bold whitespace-nowrap">
-                          <span className={isHigh ? 'text-emerald-400' : 'text-amber-400'}>
-                            {rec.score} / {rec.totalQuestions}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-0.5 rounded-full font-bold text-[11px] ${
-                              isHigh
-                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                                : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                            }`}
-                          >
-                            {rec.percentage}%
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-slate-400 font-mono text-[11px] whitespace-nowrap">
-                          {Math.floor(rec.timeSpentSeconds / 60)}m {rec.timeSpentSeconds % 60}s
-                        </td>
-                        <td className="py-3 px-3 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {onStartSmartReplay && rec.percentage < 100 && (
-                              <button
-                                type="button"
-                                onClick={() => onStartSmartReplay(rec)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-bold transition cursor-pointer"
-                                title="Smart Replay: Retake questions missed in this test"
-                              >
-                                <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
-                                <span>Smart Replay</span>
-                              </button>
-                            )}
+            <>
+              {/* Mobile Responsive Card List (visible on < 768px) */}
+              <div className="md:hidden space-y-3">
+                {filteredScores.map((rec) => {
+                  const isHigh = rec.percentage >= 80;
+                  const displayUid = rec.userId || `UID-${rec.roll}`;
+                  const displayNet = rec.netScore ?? rec.score;
+                  const negRate = rec.negativeMarking ?? 0;
+                  const flaggedCount = rec.flaggedQuestions?.length ?? 0;
 
+                  return (
+                    <div
+                      key={`mob-${rec.id}`}
+                      className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-bold text-sm text-white truncate">{rec.userName}</div>
+                          <div className="text-[11px] font-mono text-amber-300">
+                            ID: {displayUid} • <span className="text-cyan-300">Roll: {rec.roll}</span>
+                          </div>
+                        </div>
+                        <span
+                          className={`px-2.5 py-1 rounded-full font-mono font-black text-xs shrink-0 ${
+                            isHigh
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                          }`}
+                        >
+                          {rec.percentage}%
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span className="px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30 text-cyan-200 font-semibold text-[11px]">
+                          {rec.modelTitle}
+                        </span>
+                        <span className="font-mono font-bold text-white tabular-nums">
+                          Net: <span className={isHigh ? 'text-emerald-400' : 'text-amber-300'}>{displayNet}</span> / {rec.totalQuestions}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+                        {rec.correctCount !== undefined && (
+                          <span className="px-2 py-0.5 rounded bg-emerald-950/70 border border-emerald-500/30 text-emerald-300">
+                            Right: {rec.correctCount}
+                          </span>
+                        )}
+                        {rec.wrongCount !== undefined && (
+                          <span className="px-2 py-0.5 rounded bg-rose-950/70 border border-rose-500/30 text-rose-300">
+                            Wrong: {rec.wrongCount}
+                          </span>
+                        )}
+                        <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                          Neg: {negRate === 0 ? 'Off' : `-${negRate.toFixed(2)}`}
+                        </span>
+                        {flaggedCount > 0 && (
+                          <span className="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/40 text-amber-200 flex items-center gap-1">
+                            <Flag className="w-2.5 h-2.5 fill-amber-400" /> {flaggedCount}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-[11px] text-slate-400">
+                        <span className="font-mono">
+                          {rec.date} • {Math.floor(rec.timeSpentSeconds / 60)}m {rec.timeSpentSeconds % 60}s
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {onStartSmartReplay && rec.percentage < 100 && (
                             <button
                               type="button"
-                              onClick={() => handleSelectForCompare(rec.id)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 text-[11px] font-bold transition cursor-pointer"
-                              title="Compare this quiz attempt"
+                              onClick={() => onStartSmartReplay(rec)}
+                              className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
                             >
-                              <Scale className="w-3 h-3" />
-                              <span>Compare</span>
+                              <Zap className="w-3 h-3 fill-amber-400" /> Replay
                             </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleSelectForCompare(rec.id)}
+                            className="px-2.5 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <Scale className="w-3 h-3" /> Compare
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View (visible on >= 768px) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-bold">
+                      <th className="py-2.5 px-3">Date & Time</th>
+                      <th className="py-2.5 px-3">User Name & ID</th>
+                      <th className="py-2.5 px-3">Model Set</th>
+                      <th className="py-2.5 px-3">R / W / Neg</th>
+                      <th className="py-2.5 px-3">Net Score</th>
+                      <th className="py-2.5 px-3">Accuracy</th>
+                      <th className="py-2.5 px-3">Time</th>
+                      <th className="py-2.5 px-3 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/80">
+                    {filteredScores.map((rec) => {
+                      const isHigh = rec.percentage >= 80;
+                      const displayUid = rec.userId || `UID-${rec.roll}`;
+                      const displayNet = rec.netScore ?? rec.score;
+                      const negRate = rec.negativeMarking ?? 0;
+                      const flaggedCount = rec.flaggedQuestions?.length ?? 0;
+
+                      return (
+                        <tr
+                          key={rec.id}
+                          className="hover:bg-slate-850/60 transition font-medium text-slate-200"
+                        >
+                          <td className="py-3 px-3 text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                            {rec.date}
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <div className="font-bold text-white">{rec.userName}</div>
+                            <div className="text-[10px] font-mono text-amber-300">
+                              ID: {displayUid} • <span className="text-cyan-300">Roll: {rec.roll}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30 text-cyan-200 font-semibold text-[11px]">
+                                {rec.modelTitle}
+                              </span>
+                              {flaggedCount > 0 && (
+                                <span
+                                  className="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-mono flex items-center gap-0.5"
+                                  title={`${flaggedCount} flagged questions`}
+                                >
+                                  <Flag className="w-2.5 h-2.5 fill-amber-400" /> {flaggedCount}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-3 font-mono text-[11px] whitespace-nowrap tabular-nums">
+                            <span className="text-emerald-300">{rec.correctCount ?? '-'}R</span>
+                            <span className="text-slate-600 mx-1">/</span>
+                            <span className="text-rose-300">{rec.wrongCount ?? '-'}W</span>
+                            <span className="text-slate-600 mx-1">/</span>
+                            <span className={negRate > 0 ? 'text-rose-400' : 'text-slate-400'}>
+                              {negRate === 0 ? 'Off' : `-${negRate.toFixed(2)}`}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 font-mono font-bold whitespace-nowrap tabular-nums">
+                            <span className={isHigh ? 'text-emerald-400' : 'text-amber-400'}>
+                              {displayNet} / {rec.totalQuestions}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span
+                              className={`px-2 py-0.5 rounded-full font-bold text-[11px] font-mono tabular-nums ${
+                                isHigh
+                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                                  : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                              }`}
+                            >
+                              {rec.percentage}%
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-slate-400 font-mono text-[11px] whitespace-nowrap tabular-nums">
+                            {Math.floor(rec.timeSpentSeconds / 60)}m {rec.timeSpentSeconds % 60}s
+                          </td>
+                          <td className="py-3 px-3 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {onStartSmartReplay && rec.percentage < 100 && (
+                                <button
+                                  type="button"
+                                  onClick={() => onStartSmartReplay(rec)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-bold transition cursor-pointer"
+                                  title="Smart Replay: Retake questions missed in this test"
+                                >
+                                  <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+                                  <span>Smart Replay</span>
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => handleSelectForCompare(rec.id)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 text-[11px] font-bold transition cursor-pointer"
+                                title="Compare this quiz attempt"
+                              >
+                                <Scale className="w-3 h-3" />
+                                <span>Compare</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </>

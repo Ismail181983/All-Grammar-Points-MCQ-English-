@@ -47,10 +47,19 @@ export interface CategoryScoreDetail {
 export interface ScoreRecord {
   id: string;
   userName: string;
+  userId?: string;
   roll: string;
   modelNumber: number;
   modelTitle: string;
   score: number;
+  rawScore?: number;
+  netScore?: number;
+  correctCount?: number;
+  wrongCount?: number;
+  unansweredCount?: number;
+  negativeMarking?: 0 | 0.25 | 0.5;
+  penalty?: number;
+  flaggedQuestions?: number[];
   totalQuestions: number;
   percentage: number;
   timeSpentSeconds: number;
@@ -98,6 +107,11 @@ export interface QuizSettings {
   enableQuestionTimer: boolean;
   questionTimeSeconds: number;
   autoAdvanceOnAnswer?: boolean;
+
+  // Negative Marking & Typography Controls
+  negativeMarking: 0 | 0.25 | 0.5;
+  questionFontSize: number;
+  optionFontSize: number;
   
   // Visuals & Aquarium
   enableAquariumAnimation: boolean;
@@ -116,6 +130,7 @@ export interface QuizSettings {
 
 export interface StudentProfile {
   name: string;
+  userId: string;
   roll: string;
 }
 

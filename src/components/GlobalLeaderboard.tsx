@@ -190,10 +190,10 @@ export const GlobalLeaderboard: React.FC<GlobalLeaderboardProps> = ({
                   </span>
                 )}
               </div>
-              <h3 className="text-base sm:text-lg font-black text-white">
-                {studentProfile.name}{' '}
-                <span className="text-xs text-slate-400 font-mono font-normal">
-                  (Roll: {studentProfile.roll})
+              <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2 flex-wrap">
+                <span>{studentProfile.name}</span>
+                <span className="text-xs text-cyan-300 font-mono font-semibold">
+                  (ID: {studentProfile.userId || 'UID-1001'} • Roll: {studentProfile.roll})
                 </span>
               </h3>
               <p className="text-xs text-slate-300">

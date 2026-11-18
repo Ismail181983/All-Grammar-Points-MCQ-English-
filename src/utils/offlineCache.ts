@@ -31,7 +31,7 @@ export function cacheViewedQuestionSet(set: ModelQuestionSet): void {
         categorySummary: Array.from(new Set(set.questions.map((q) => q.category))).slice(0, 4),
       },
       ...filtered,
-    ].slice(0, 35); // Keep up to all 35 sets
+    ].slice(0, 45); // Keep up to all 45 sets
 
     localStorage.setItem(CACHE_KEYS.PREVIOUSLY_VIEWED_SETS, JSON.stringify(updated));
     localStorage.setItem(`grammar_set_data_${set.id}`, JSON.stringify(set));

@@ -32,6 +32,9 @@ const DEFAULT_SETTINGS: QuizSettings = {
   enableQuestionTimer: true,
   questionTimeSeconds: 45,
   autoAdvanceOnAnswer: true,
+  negativeMarking: 0.25,
+  questionFontSize: 18,
+  optionFontSize: 15,
   enableAquariumAnimation: true,
   aquariumFishCount: 12,
   aquariumFlowerCount: 8,
@@ -43,6 +46,7 @@ const DEFAULT_SETTINGS: QuizSettings = {
 
 const DEFAULT_PROFILE: StudentProfile = {
   name: 'Md. Ismail Student',
+  userId: 'UID-1001',
   roll: '01',
 };
 
@@ -53,6 +57,7 @@ export default function App() {
   const [activeModelId, setActiveModelId] = useState<number>(1);
   const [customPracticeSet, setCustomPracticeSet] = useState<ModelQuestionSet | null>(null);
   const [userAnswers, setUserAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
+  const [flaggedQuestionIds, setFlaggedQuestionIds] = useState<number[]>([]);
   const [quizTimeSpent, setQuizTimeSpent] = useState<number>(0);
 
   // Settings State with LocalStorage Persistence
@@ -69,7 +74,15 @@ export default function App() {
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(() => {
     try {
       const saved = localStorage.getItem('asgk_student_profile');
-      return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          name: parsed.name || DEFAULT_PROFILE.name,
+          userId: parsed.userId || (parsed.roll ? `UID-${parsed.roll}` : DEFAULT_PROFILE.userId),
+          roll: parsed.roll || DEFAULT_PROFILE.roll,
+        };
+      }
+      return DEFAULT_PROFILE;
     } catch {
       return DEFAULT_PROFILE;
     }
@@ -159,6 +172,7 @@ export default function App() {
     setIsLoggedIn(false);
     setCurrentView('dashboard');
     setUserAnswers({});
+    setFlaggedQuestionIds([]);
     setQuizTimeSpent(0);
     if (settings.ambientSound) {
       soundManager.startAmbientAquarium();
@@ -171,6 +185,7 @@ export default function App() {
     }
     setActiveModelId(modelId);
     setUserAnswers({});
+    setFlaggedQuestionIds([]);
     setQuizTimeSpent(0);
     setCurrentView('quiz');
   }, []);
@@ -179,6 +194,7 @@ export default function App() {
     setCustomPracticeSet(customSet);
     setActiveModelId(customSet.id);
     setUserAnswers({});
+    setFlaggedQuestionIds([]);
     setQuizTimeSpent(0);
     setCurrentView('quiz');
   }, []);
@@ -199,13 +215,17 @@ export default function App() {
 
   const handleCheckAnswer = useCallback((
     answers: Record<number, 'A' | 'B' | 'C' | 'D'>,
-    timeSpent: number
+    timeSpent: number,
+    flaggedIds: number[] = []
   ) => {
     setUserAnswers(answers);
+    setFlaggedQuestionIds(flaggedIds);
     setQuizTimeSpent(timeSpent);
 
     const activeSet = activeModelSet;
     let correct = 0;
+    let wrong = 0;
+    let unanswered = 0;
     const categoryScores: Record<string, CategoryScoreDetail> = {};
 
     activeSet.questions.forEach((q) => {
@@ -215,9 +235,14 @@ export default function App() {
       }
       categoryScores[cat].total++;
 
-      if (answers[q.id] === q.correctAnswer) {
+      const ans = answers[q.id];
+      if (!ans) {
+        unanswered++;
+      } else if (ans === q.correctAnswer) {
         correct++;
         categoryScores[cat].correct++;
+      } else {
+        wrong++;
       }
     });
 
@@ -233,7 +258,10 @@ export default function App() {
     } catch {}
 
     const total = activeSet.questions.length;
-    const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const negRate = settings.negativeMarking ?? 0;
+    const penalty = Number((wrong * negRate).toFixed(2));
+    const netScore = Number((correct - penalty).toFixed(2));
+    const percentage = total > 0 ? Math.max(0, Math.round((netScore / total) * 100)) : 0;
 
     // Save to permanent scoreboard
     const now = new Date();
@@ -248,10 +276,19 @@ export default function App() {
     const newRecord: ScoreRecord = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
       userName: studentProfile.name,
+      userId: studentProfile.userId,
       roll: studentProfile.roll,
       modelNumber: activeModelId,
       modelTitle: activeSet.title,
-      score: correct,
+      score: netScore,
+      rawScore: correct,
+      netScore,
+      correctCount: correct,
+      wrongCount: wrong,
+      unansweredCount: unanswered,
+      negativeMarking: negRate,
+      penalty,
+      flaggedQuestions: flaggedIds,
       totalQuestions: total,
       percentage,
       timeSpentSeconds: timeSpent,
@@ -289,7 +326,7 @@ export default function App() {
 
     setScoreRecords(nextScores);
     setCurrentView('result');
-  }, [activeModelId, activeModelSet, scoreRecords, settings.soundEffects, studentProfile.name, studentProfile.roll, unlockedBadgesMap]);
+  }, [activeModelId, activeModelSet, customPracticeSet, scoreRecords, settings.negativeMarking, settings.soundEffects, studentProfile.name, studentProfile.roll, studentProfile.userId, unlockedBadgesMap]);
 
   const handleClearScores = useCallback(() => {
     setScoreRecords([]);
@@ -317,6 +354,7 @@ export default function App() {
   const handleExitQuiz = useCallback(() => setCurrentView('dashboard'), []);
   const handleRetake = useCallback(() => {
     setUserAnswers({});
+    setFlaggedQuestionIds([]);
     setQuizTimeSpent(0);
     setNewlyUnlockedBadges([]);
     setCurrentView('quiz');
@@ -334,6 +372,7 @@ export default function App() {
     setCustomPracticeSet(replaySet);
     setActiveModelId(replaySet.id);
     setUserAnswers({});
+    setFlaggedQuestionIds([]);
     setQuizTimeSpent(0);
     setNewlyUnlockedBadges([]);
     setCurrentView('quiz');
@@ -429,6 +468,7 @@ export default function App() {
         <ResultView
           modelSet={activeModelSet}
           userAnswers={userAnswers}
+          flaggedQuestionIds={flaggedQuestionIds}
           timeSpentSeconds={quizTimeSpent}
           studentProfile={studentProfile}
           settings={settings}
@@ -440,6 +480,7 @@ export default function App() {
           onOpenScoreBoard={handleOpenScoreBoard}
           onOpenTrophiesModal={handleOpenTrophiesModal}
           onOpenFlashcards={handleOpenFlashcards}
+          onUpdateSettings={updateSettings}
         />
       )}
 
@@ -472,6 +513,7 @@ export default function App() {
         isOpen={isTrophiesModalOpen}
         onClose={handleCloseTrophiesModal}
         badges={badges}
+        studentProfile={studentProfile}
         soundEffects={settings.soundEffects}
       />
     </div>

@@ -241,10 +241,17 @@ export const ShareProgressModal: React.FC<ShareProgressModalProps> = ({
           </div>
 
           {/* Quick Stats Strip */}
-          <div className="px-5 sm:px-6 py-2.5 bg-slate-950/60 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-2 text-slate-300">
+          <div className="px-4 sm:px-6 py-2.5 bg-slate-950/60 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2 text-slate-300">
               <span className="text-slate-400">Candidate:</span>
               <strong className="text-cyan-300">{data.studentName}</strong>
+              {data.userId && (
+                <>
+                  <span className="text-slate-500">|</span>
+                  <span className="text-slate-400">ID:</span>
+                  <span className="font-mono text-amber-300">{data.userId}</span>
+                </>
+              )}
               <span className="text-slate-500">|</span>
               <span className="text-slate-400">Roll:</span>
               <span className="font-mono text-amber-300">{data.roll}</span>

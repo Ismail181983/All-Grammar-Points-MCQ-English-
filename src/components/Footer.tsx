@@ -86,10 +86,10 @@ export const Footer: React.FC = () => {
             <a
               id="footer-email-btn"
               href="mailto:ismailhossain627@yahoo.com"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-sm font-bold shadow-lg shadow-cyan-600/25 hover:from-cyan-500 hover:to-blue-500 transition transform hover:-translate-y-0.5 active:translate-y-0"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs sm:text-sm font-bold shadow-lg shadow-cyan-600/25 hover:from-cyan-500 hover:to-blue-500 transition transform hover:-translate-y-0.5 active:translate-y-0 max-w-full"
             >
-              <Mail className="w-4 h-4" />
-              <span>ismailhossain627@yahoo.com</span>
+              <Mail className="w-4 h-4 shrink-0" />
+              <span className="break-all">ismailhossain627@yahoo.com</span>
             </a>
 
             <button

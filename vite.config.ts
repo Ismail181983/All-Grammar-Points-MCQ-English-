@@ -107,6 +107,7 @@ export default defineConfig(() => {
           ],
         },
         workbox: {
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
           runtimeCaching: [
             {
@@ -145,6 +146,19 @@ export default defineConfig(() => {
         },
       }),
     ],
+    build: {
+      chunkSizeWarningLimit: 1500,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom'],
+            'vendor-motion': ['motion'],
+            'vendor-charts': ['recharts'],
+            'vendor-icons': ['lucide-react'],
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

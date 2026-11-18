@@ -324,7 +324,7 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                 if (settings.soundEffects) soundManager.playClick();
                 onSwitchModelSet(Number(e.target.value));
               }}
-              className="bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs sm:text-sm font-bold rounded-xl px-2.5 sm:px-3 py-1.5 focus:outline-none focus:border-cyan-400 cursor-pointer"
+              className="max-w-[180px] xs:max-w-[240px] sm:max-w-xs truncate bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs sm:text-sm font-bold rounded-xl px-2.5 sm:px-3 py-1.5 focus:outline-none focus:border-cyan-400 cursor-pointer"
             >
               {allSets.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -574,7 +574,10 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                     {!isFlipped ? (
                       /* Front: Question & 4 MCQ Options */
                       <div className="space-y-4 sm:space-y-5">
-                        <h3 className="text-base sm:text-xl md:text-2xl font-black text-white leading-snug tracking-tight">
+                        <h3
+                          className="font-black text-white leading-snug tracking-tight break-words"
+                          style={{ fontSize: `${settings.questionFontSize || 18}px` }}
+                        >
                           {currentQuestion.question}
                         </h3>
 
@@ -583,12 +586,20 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                           {(['A', 'B', 'C', 'D'] as const).map((optKey) => (
                             <div
                               key={optKey}
-                              className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-300 text-xs sm:text-sm"
+                              className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-300"
                             >
-                              <span className="w-6 h-6 rounded-lg bg-slate-800 text-cyan-300 border border-cyan-500/30 flex items-center justify-center font-bold font-mono text-xs shrink-0">
+                              <span
+                                className="w-6 h-6 rounded-lg bg-slate-800 text-cyan-300 border border-cyan-500/30 flex items-center justify-center font-bold font-mono shrink-0"
+                                style={{ fontSize: `${Math.max(11, (settings.optionFontSize || 15) - 2)}px` }}
+                              >
                                 {optKey}
                               </span>
-                              <span className="leading-snug">{currentQuestion.options[optKey]}</span>
+                              <span
+                                className="leading-snug break-words"
+                                style={{ fontSize: `${settings.optionFontSize || 15}px` }}
+                              >
+                                {currentQuestion.options[optKey]}
+                              </span>
                             </div>
                           ))}
                         </div>

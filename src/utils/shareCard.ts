@@ -2,9 +2,13 @@ import { BadgeProgress } from '../types';
 
 export interface ShareCardData {
   studentName: string;
+  userId?: string;
   roll: string;
   modelTitle: string;
   score: number;
+  netScore?: number;
+  negativeMarking?: 0 | 0.25 | 0.5;
+  penalty?: number;
   totalQuestions: number;
   percentage: number;
   timeSpentSeconds: number;
@@ -44,9 +48,12 @@ export function generateShareTextSnippet(data: ShareCardData): string {
 
   let text = `🎯 ENGLISH GRAMMAR MODEL TEST RESULT\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `👤 Candidate: ${data.studentName} (Roll: ${data.roll})\n`;
+  text += `👤 Candidate: ${data.studentName}${data.userId ? ` (ID: ${data.userId}` : ' ('} | Roll: ${data.roll})\n`;
   text += `📝 Test Set: ${data.modelTitle}\n`;
-  text += `📊 Score: ${data.score}/${data.totalQuestions} (${data.percentage}%)\n`;
+  text += `📊 Net Score: ${data.score}/${data.totalQuestions} (${data.percentage}%)\n`;
+  if (data.negativeMarking && data.negativeMarking > 0) {
+    text += `⚖️ Negative Marking: -${data.negativeMarking.toFixed(2)} (Penalty: -${(data.penalty ?? 0).toFixed(2)})\n`;
+  }
   text += `🎖️ Evaluation: ${performanceGrade}\n`;
   text += `⏱️ Time Taken: ${timeFormatted}\n`;
   text += `✅ Correct: ${data.correctCount}  |  ❌ Incorrect: ${data.wrongCount}`;
@@ -66,7 +73,7 @@ export function generateShareTextSnippet(data: ShareCardData): string {
   }
 
   text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-  text += `✨ English Grammar Practice Platform (35 Sets • 875 MCQs)\n`;
+  text += `✨ English Grammar Practice Platform (45 Sets • 1,125 MCQs)\n`;
 
   return text;
 }
@@ -80,12 +87,16 @@ export function generateScoreDetailsExport(data: ShareCardData): string {
     exportedAt: new Date().toISOString(),
     candidate: {
       name: data.studentName,
+      userId: data.userId || `UID-${data.roll}`,
       roll: data.roll,
     },
     exam: {
       modelTitle: data.modelTitle,
       totalQuestions: data.totalQuestions,
       score: data.score,
+      netScore: data.netScore ?? data.score,
+      negativeMarking: data.negativeMarking ?? 0,
+      penalty: data.penalty ?? 0,
       percentage: data.percentage,
       correctAnswers: data.correctCount,
       wrongAnswers: data.wrongCount,
@@ -229,11 +240,10 @@ export async function generateShareCardBlob(data: ShareCardData): Promise<Blob> 
   const nameWidth = ctx.measureText(data.studentName).width;
   ctx.font = '500 18px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#94A3B8';
-  ctx.fillText(`  •  Roll: `, 146 + nameWidth, 162);
-
-  ctx.font = 'bold 18px monospace';
-  ctx.fillStyle = '#FBBF24'; // Amber 400
-  ctx.fillText(data.roll, 146 + nameWidth + 82, 162);
+  const idRollLabel = data.userId
+    ? `  •  ID: ${data.userId}  •  Roll: ${data.roll}`
+    : `  •  Roll: ${data.roll}`;
+  ctx.fillText(idRollLabel, 146 + nameWidth, 162);
 
   // 3. Central Highlights Grid (4 Stat Cards)
   const cardY = 200;
@@ -399,7 +409,7 @@ export async function generateShareCardBlob(data: ShareCardData): Promise<Blob> 
   ctx.fillStyle = '#64748B';
   ctx.font = '13px system-ui, -apple-system, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('English Grammar Practice Platform • 35 Sets • 875 MCQs with Explanations', 56, height - 42);
+  ctx.fillText('English Grammar Practice Platform • 45 Sets • 1,125 MCQs with Explanations', 56, height - 42);
 
   ctx.textAlign = 'right';
   ctx.fillText('Generated via GrammarQuiz Progress Share', width - 56, height - 42);
